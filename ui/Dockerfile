@@ -9,7 +9,7 @@ COPY ./package*.json /app/
 RUN npm install
 
 # Copy the rest of the project files into the container
-COPY ./path_to_nextjs_folder /app/
+COPY ./ /app/
 
 # Make port 3000 available to the world outside the container
 EXPOSE 3000
