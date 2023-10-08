@@ -6,4 +6,4 @@ COPY . /app
 
 RUN npm install
 
-CMD ["node", "app.js"]
+CMD ["node", "app.mjs"]
