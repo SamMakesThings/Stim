@@ -144,4 +144,4 @@ dmypy.json
 .github/templates/*
 !/benchmarker/agent/beebot/
 
-node*/*
+/ui/node_modules
