@@ -149,3 +149,4 @@ docker-compose.yml
 .flake8
 node*/*
 /ui/node_modules
+/ui/.next
