@@ -142,3 +142,5 @@ dmypy.json
 # templates
 .github/templates/*
 !/benchmarker/agent/beebot/
+
+.docker-compose.yml
