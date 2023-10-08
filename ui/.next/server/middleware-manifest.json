@@ -20,6 +20,101 @@
       ],
       "wasm": [],
       "assets": []
+    },
+    "/api/chat/structured_output/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/app/api/chat/structured_output/route.js"
+      ],
+      "name": "app/api/chat/structured_output/route",
+      "page": "/api/chat/structured_output/route",
+      "matchers": [
+        {
+          "regexp": "^/api/chat/structured_output$",
+          "originalSource": "/api/chat/structured_output"
+        }
+      ],
+      "wasm": [],
+      "assets": []
+    },
+    "/api/chat/retrieval/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/app/api/chat/retrieval/route.js"
+      ],
+      "name": "app/api/chat/retrieval/route",
+      "page": "/api/chat/retrieval/route",
+      "matchers": [
+        {
+          "regexp": "^/api/chat/retrieval$",
+          "originalSource": "/api/chat/retrieval"
+        }
+      ],
+      "wasm": [],
+      "assets": []
+    },
+    "/api/retrieval/ingest/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/app/api/retrieval/ingest/route.js"
+      ],
+      "name": "app/api/retrieval/ingest/route",
+      "page": "/api/retrieval/ingest/route",
+      "matchers": [
+        {
+          "regexp": "^/api/retrieval/ingest$",
+          "originalSource": "/api/retrieval/ingest"
+        }
+      ],
+      "wasm": [],
+      "assets": []
+    },
+    "/api/chat/agents/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/app/api/chat/agents/route.js"
+      ],
+      "name": "app/api/chat/agents/route",
+      "page": "/api/chat/agents/route",
+      "matchers": [
+        {
+          "regexp": "^/api/chat/agents$",
+          "originalSource": "/api/chat/agents"
+        }
+      ],
+      "wasm": [],
+      "assets": []
+    },
+    "/api/chat/retrieval_agents/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/app/api/chat/retrieval_agents/route.js"
+      ],
+      "name": "app/api/chat/retrieval_agents/route",
+      "page": "/api/chat/retrieval_agents/route",
+      "matchers": [
+        {
+          "regexp": "^/api/chat/retrieval_agents$",
+          "originalSource": "/api/chat/retrieval_agents"
+        }
+      ],
+      "wasm": [],
+      "assets": []
     }
   },
   "version": 2

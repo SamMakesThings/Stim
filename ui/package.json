@@ -34,6 +34,7 @@
     "zod-to-json-schema": "^3.21.4"
   },
   "devDependencies": {
+    "@types/formidable": "^3.4.3",
     "prettier": "3.0.0"
   }
 }
