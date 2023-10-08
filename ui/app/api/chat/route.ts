@@ -7,7 +7,7 @@ import { PromptTemplate } from "langchain/prompts";
 import { RealtimePostgresChangesPayload, createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://kjywviviybvdhyzhvyry.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY!
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqeXd2aXZpeWJ2ZGh5emh2eXJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTY3MzQ3ODgsImV4cCI6MjAxMjMxMDc4OH0.M9spxT3126JgZ_ujoFnwxfPv6u9v9wRdJ5Y_VTt4mkQ"
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 

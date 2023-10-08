@@ -109,3 +109,6 @@ async def step_handler(step: Step):
     else:
         logger.error(f"Unknown step type: {step.name}")
         return await _handle_unsupported_step(step)
+
+
+Agent.setup_agent(task_handler, step_handler).start()
