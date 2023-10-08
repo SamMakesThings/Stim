@@ -14,18 +14,6 @@ logger.setLevel(logging.INFO)
 app = FastAPI()
 
 
-# test
-relevance = RelevanceAgent()
-relevance.batch_stimulus_into_topic(
-    {
-        "sender": "Alex",
-        "content": "Who is joining for coffee at 4?",
-        "message_id": 1,
-        "relevance": 0.5,
-    }
-)
-
-
 class StepTypes(str, Enum):
     PROCESS = "process"  # Eval + Batch
     QUERY = "query"  # If the user has asked for information of any level
@@ -33,10 +21,19 @@ class StepTypes(str, Enum):
     UNSUPPORTED = "unsupported"  # Default response for bad requests
 
 
+class PriorityLevel(Enum):
+    LOW = 0
+    MEDIUM = 1
+    HIGH = 2
+    CRITICAL = 3
+
+
 async def _process_stimuli(step: Step) -> Step:
     # Process the stimulus
-    # AKA Eval + Batch
-    # NOTE: Chiung-Yi code here
+    logger.info(step.input)
+    step.input["priority"] = step.input["priority"].lower()
+    if step.input["priority"]:
+        step.input["priority"] = 1
 
     step.output = "Processed stimulus"  # TODO: Replace with actual output
     step.status = "done"
