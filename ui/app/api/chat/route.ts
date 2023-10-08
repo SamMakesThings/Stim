@@ -13,20 +13,6 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 
 
-// const channel = supabase
-// .channel('schema-db-changes')
-// .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_history', filter: 'sender=eq.system' }, 
-// payload => {
-//   // console.log('Change received!', payload)
-//   // handle change by adding it to messages array
-//   resolveNewMessage(payload);  // resolve the promise with the new message payload
-
-
-// })
-// .subscribe()
-
-
-// print details on a chat
 
 
 export const runtime = "edge";
@@ -35,13 +21,8 @@ const formatMessage = (message: VercelChatMessage) => {
   return `${message.role}: ${message.content}`;
 };
 
-const TEMPLATE = 
-`
-Current conversation:
-{chat_history}
 
-User: {input}
-AI:`;
+
 // I want to send the message to the database and then take the 
 // latest message after current time and pass it to the open ai call
 /**
@@ -50,11 +31,20 @@ AI:`;
  *
  * https://js.langchain.com/docs/guides/expression_language/cookbook#prompttemplate--llm--outputparser
  */
+
 export async function POST(req: NextRequest) {
-  let resolveNewMessage;
-  const newMessagePromise = new Promise(resolve => {
+  interface NewMessagePayload {
+    new: {
+      content: string;
+    };
+  }
+  
+  let resolveNewMessage: (value: RealtimePostgresChangesPayload<{ [key: string]: any; }> | PromiseLike<RealtimePostgresChangesPayload<{ [key: string]: any; }>>) => void;
+  const newMessagePromise = new Promise<RealtimePostgresChangesPayload<{ [key: string]: any; }>>((resolve) => {
     resolveNewMessage = resolve;
   });
+  
+
 
   const channel = supabase
   .channel('schema-db-changes')
@@ -84,14 +74,37 @@ export async function POST(req: NextRequest) {
       const newMessage = await newMessagePromise;  // wait for a new message
       // console.log('newMessage', newMessage);
       //Get the content from the new message
-      const content = newMessage?.new.content;
-      if (content.includes('hello')) {
-        console.log('The content contains the string "hello"');
+      const news = newMessage?.new;
+      //check if "content" is in newMEssage keys
+      if ('content' in newMessage.new) {
+        const content = newMessage.new.content;
+        console.log('content', content);
+        return new StreamingTextResponse(content)
+
+      } else {
+        console.log('content key is not present');
       }
       
+      // if(news != '{}'){
+      //   if (news && Object.keys(news).length > 0) {
+      //     const content = news.content;
+      //     if (content.includes('hello')) {
+      //       console.log('The content contains the string "hello"');
+      //     }
+      //   }
+      //   if (content.includes('hello')) {
+      //     console.log('The content contains the string "hello"');
+      //   }
+        
+
+      // }
       // return new StreamingTextResponse(content)
 
-    
+    interface NewMessage {
+  content: string;
+  // ... other properties
+}
+
 
       }
   } catch (e: any) {

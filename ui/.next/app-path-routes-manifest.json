@@ -1,0 +1,13 @@
+{
+  "/api/chat/route": "/api/chat",
+  "/api/chat/structured_output/route": "/api/chat/structured_output",
+  "/api/chat/retrieval/route": "/api/chat/retrieval",
+  "/api/retrieval/ingest/route": "/api/retrieval/ingest",
+  "/api/chat/agents/route": "/api/chat/agents",
+  "/api/chat/retrieval_agents/route": "/api/chat/retrieval_agents",
+  "/page": "/",
+  "/agents/page": "/agents",
+  "/retrieval/page": "/retrieval",
+  "/retrieval_agents/page": "/retrieval_agents",
+  "/structured_output/page": "/structured_output"
+}
