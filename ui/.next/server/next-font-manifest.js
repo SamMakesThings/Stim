@@ -1,1 +1,0 @@
-self.__NEXT_FONT_MANIFEST='{"pages":{},"app":{"/Users/merlimar/Projects/AUTOGPT/BBB/Stim/ui/app/layout":["static/media/6a44acd4f1e705fc-s.p.woff2"]},"appUsingSizeAdjust":true,"pagesUsingSizeAdjust":false}';
