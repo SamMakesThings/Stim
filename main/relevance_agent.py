@@ -1,10 +1,12 @@
 import os
+from statistics import mode
 from dotenv import load_dotenv
 import logging
 
 import openai
 
 from supabase_db import supabase
+from utils import read_chat_history
 
 load_dotenv()
 
@@ -51,7 +53,7 @@ class RelevanceAgent:
                         },
                         {
                             "role": "user",
-                            "content": f"{stimulus['sender']}: {stimulus['content']}",
+                            "content": f"{stimulus['author']}: {stimulus['content']}",
                         },
                     ],
                 )
@@ -82,7 +84,11 @@ class RelevanceAgent:
         return response
 
     def calculate_relevance(self, topic, stimuli, old_relevance):
-        stimuli_str = 
+        messages_str = read_chat_history()
+        priorities = [stimulus["priority"] for stimulus in stimuli]
+        topic_priority = mode(priorities)
+        if "critical" in priorities:
+            topic_priority = "critical"
         response = None
         try:
             response = (
@@ -92,28 +98,35 @@ class RelevanceAgent:
                         {
                             "role": "system",
                             "content": f"""
-                        You are a topic identification system. You receive messages that need to be categorized into topics.
-                        If no existing topic clearly represents the message content, create a new topic.
-                        Respond with only the string of the topic, no quotes, no fluff, nothing other than the topic itself.
+                        You are a proficient system that determines how relevant a topic is.
+                        You know the recent chat history between a human user and their AI assistant.
+                        You receive a Topic, it's Old Relevance score, and a Priority level.
+                        Your job is to determine the new Relevance score for the topic in the current context of the given conversation.
+                        Choose only one of the following Relevance scores as your output:
+                        - Ignorable
+                        - Low
+                        - Moderate
+                        - High
+                        - Emergency
 
-                        Topic: {topic}
-                        Old Relevance: {old_relevance if old_relevance else "UNNASSIGNED"}
-                        Stimuli: {stimuli_str}
+                        Follow these steps to determine the new Relevance score:
+                        1. Identify the 3 most salient concepts in the chat history.
+                        2. Evaluate how similar the Topic is to each of the 3 concepts.
+                        3a. If the Old Relevance score is UNNASSIGNED, choose a Relevance score based on the Topic similarity to chat history.
+                        3b. Otherwise, choose a Relevance score based on the Topic similarity to chat history and the Priority level.
+                        4. If the Priority level is critical, always choose Emergency.
 
+                        Respond with only the string of the new Relevance score, no quotes, no fluff, nothing other than the Relevance itself.
 
-                        EXAMPLES:
-                            Existing Topics: board meeting prep, chiefs game on saturday, dinner with mom, coffee with alex at 4
-                            USER: Alex: Who is joining for coffee at 4?
-                            ASSISTANT: coffee with alex at 4
-
-                            Existing Topics: brunch with grandma, updates to frontend, new hire onboarding
-                            USER: Sara: I'm going to be out of the office for the next two weeks
-                            ASSISTANT: Sara out of office
+                        Chat History:
+                        {messages_str}
                         """,  # noqa: E501
                         },
                         {
                             "role": "user",
-                            "content": f"{stimulus['sender']}: {stimulus['content']}",
+                            "content": f"""Topic: {topic}
+                        Old Relevance: {old_relevance if old_relevance else "UNNASSIGNED"}
+                        Priority: {topic_priority}""",  # noqa: E501
                         },
                     ],
                 )
@@ -126,15 +139,3 @@ class RelevanceAgent:
         logger.info(response)
         # Return the relevance score for the topic batch
         return response
-
-
-# Example Usage
-relevance = RelevanceAgent()
-relevance.batch_stimulus_into_topic(
-    {
-        "priority": "Low",
-        "author": "Alex",
-        "content": "I want to sail across the atlantic",
-        "channel": "general",
-    }
-)

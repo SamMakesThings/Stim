@@ -7,5 +7,9 @@ COPY ./ /app
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-# Run app.py when the container launches
-CMD ["python client.py"]
+# Make port 8000 available to the world outside the container
+EXPOSE 8000
+
+# Define environment variable for FastAPI to run on 0.0.0.0
+ENV HOST=0.0.0.0
+

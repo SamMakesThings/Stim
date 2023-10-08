@@ -11,6 +11,6 @@ typing_extensions~=4.8.0
 black~=23.9.1
 uvicorn~=0.23.2
 discord.py~=2.3.2
-dotenv~=1.0.0
+python-dotenv~=1.0.0
 langchain~=0.0.310
 openai~=0.28.1

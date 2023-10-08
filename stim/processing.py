@@ -43,7 +43,7 @@ Respond with only the priority level with no other text.
 # Message
 
 {message}
-"""
+"""  # noqa: E501
 
 AGENTS = ["http://localhost:8001/"]
 
@@ -59,6 +59,19 @@ async def prioritize_message(message: Message):
     return priority
 
 
+async def get_task_ids(agent: str, session) -> list[int]:
+    url = urljoin(agent, "ap/v1/agent/tasks")
+    task_ids = []
+
+    async with session.get(url) as response:
+        print(f"Status: {response.status}\n{response.content}")
+        data = await response.json()
+        for task in data:
+            task_ids.append(task.get("task_id"))
+
+    return task_ids
+
+
 async def process_message(message: Message):
     priority = await prioritize_message(message)
     message_data = {
@@ -68,16 +81,15 @@ async def process_message(message: Message):
         "channel": message.channel.name,
     }
 
-    # TODO Fetch task ID(s)
-    task_id = 1
-
     async with aiohttp.ClientSession() as session:
         for agent in AGENTS:
-            url = urljoin(agent, f"ap/v1/agent/tasks/{task_id}/steps")
-            print(f"Sending input {json.dumps(message_data)} to {url}")
+            task_ids = await get_task_ids(agent, session)
+            for task_id in task_ids:
+                url = urljoin(agent, f"ap/v1/agent/tasks/{task_id}/steps")
+                print(f"Sending input {json.dumps(message_data)} to {url}")
 
-            async with session.post(
-                url,
-                json={"input": json.dumps(message_data)},
-            ) as response:
-                print(f"Status: {response.status}\n{response.content}")
+                async with session.post(
+                    url,
+                    json={"input": json.dumps(message_data), "name": "process"},
+                ) as response:
+                    print(f"Status: {response.status}\n{response.content}")
