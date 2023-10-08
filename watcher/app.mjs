@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { got } from "got";
 const DATABASE_URL = process.env.DATABASE_URL;
-const DATABASE_PASS = process.env.DATABASE_PASS;
+const DATABASE_PASS = process.env.DATABASE_KEY;
 
 // Create a single supabase client for interacting with your database
 const supabase = createClient(DATABASE_URL, DATABASE_PASS);
