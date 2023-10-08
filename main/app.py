@@ -1,15 +1,9 @@
-import os
 from enum import Enum
 from fastapi import FastAPI
-from dotenv import load_dotenv
-from supabase import create_client, Client
 from agent_protocol import Agent, Step, Task
 
-load_dotenv()
+from supabase_db import supabase
 
-url: str = os.environ.get("DATABASE_URL")
-key: str = os.environ.get("DATABASE_KEY")
-supabase: Client = create_client(url, key)
 
 app = FastAPI()
 
