@@ -1,9 +1,9 @@
+import logging
 import os
 from statistics import mode
-from dotenv import load_dotenv
-import logging
 
 import openai
+from dotenv import load_dotenv
 
 from supabase_db import supabase
 from utils import read_chat_history
@@ -71,7 +71,7 @@ class RelevanceAgent:
         old_relevance = None
         for entry in topics:
             if entry["topic"] == topic:
-                existing = entry["stimuli"]
+                existing.append(entry["stimuli"])
                 old_relevance = entry["relevance"]
                 break
         stimuli = existing + [stimulus]
@@ -79,9 +79,9 @@ class RelevanceAgent:
         batch = {"topic": topic, "stimuli": stimuli, "relevance": new_relevance}
         try:
             response = supabase.table("topic_batches").upsert(batch).execute().data
+            return response
         except Exception as e:
             logger.error(f"Error upserting topic batch: {e}")
-        return response
 
     def calculate_relevance(self, topic, stimuli, old_relevance):
         messages_str = read_chat_history()
@@ -138,4 +138,4 @@ class RelevanceAgent:
 
         logger.info(response)
         # Return the relevance score for the topic batch
-        return response
+        return response.content.lower()

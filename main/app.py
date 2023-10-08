@@ -1,13 +1,15 @@
-import os
-from dotenv import load_dotenv
+import json
 import logging
+import traceback
 from enum import Enum
-from fastapi import FastAPI
-from agent_protocol import Agent, Step, Task
 
-from supabase_db import supabase
-from relevance_agent import RelevanceAgent
+from agent_protocol import Agent, Step, Task
+from dotenv import load_dotenv
+from fastapi import FastAPI
+
 from main_agent import run_main_agent
+from relevance_agent import RelevanceAgent
+from supabase_db import supabase
 from utils import flag_query_topics
 
 load_dotenv()
@@ -37,11 +39,8 @@ relevance_agent = RelevanceAgent()
 async def _process_stimuli(step: Step) -> Step:
     # Process the stimulus
     logger.info(step.input)
-    step.input["priority"] = step.input["priority"].lower()
-    if (
-        priority_map[step.input["priority"]]
-        >= priority_map[os.environ.get("PRIORITY_LEVEL")]
-    ):
+    step.input = json.loads(step.input)
+    if True:
         logger.info("Processing high priority stimulus")
         # Evaluate and batch stimulus, triggers upsert to topic_batches
         relevance_agent.batch_stimulus_into_topic(step.input)
@@ -50,8 +49,11 @@ async def _process_stimuli(step: Step) -> Step:
     else:
         logger.info("Archiving low priority stimulus")
         try:
-            supabase.table("stimuli").insert(step.input).execute().data
+            supabase.table("inbox").insert({"stimulus": step.input}).execute().data
         except Exception as e:
+            import pdb
+
+            pdb.set_trace()
             logger.error(f"Error inserting stimulus: {e}")
         step.status = "archived"
 
@@ -99,16 +101,21 @@ async def task_handler(task: Task) -> None:
 
 
 async def step_handler(step: Step):
-    task = await Agent.db.get_task(step.task_id)
-    if step.name == StepTypes.PROCESS:
-        return await _process_stimuli(step)
-    elif step.name == StepTypes.QUERY:
-        return await _service_query(step)
-    elif step.name == StepTypes.REPORT:
-        return await _manage_convo_context(task, step)
-    else:
-        logger.error(f"Unknown step type: {step.name}")
-        return await _handle_unsupported_step(step)
+    try:
+        task = await Agent.db.get_task(step.task_id)
+        if not task.steps:
+            await Agent.db.create_step(task_id=task.task_id, input="")
+        if step.name == StepTypes.PROCESS:
+            return await _process_stimuli(step)
+        elif step.name == StepTypes.QUERY:
+            return await _service_query(step)
+        elif step.name == StepTypes.REPORT:
+            return await _manage_convo_context(task, step)
+        else:
+            logger.error(f"Unknown step type: {step.name}")
+            return await _handle_unsupported_step(step)
+    except Exception as e:
+        traceback.print_exception(e)
+        import pdb
 
-
-Agent.setup_agent(task_handler, step_handler).start()
+        pdb.set_trace()

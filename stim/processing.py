@@ -13,10 +13,10 @@ You are a message prioritization expert. You excel at analyzing the content of m
 # Levels
 
 There are the following levels of priority. Each message bust be given a priority most closely associated with one of the following:
-Critical - requires immediate attention and interruption
-High - requires attention in the near future
-Medium - requires attention, but is not urgent
-Low - does not require any attention
+critical - requires immediate attention and interruption
+high - requires attention in the near future
+medium - requires attention, but is not urgent
+low - does not require any attention
 
 # Context
 
@@ -47,6 +47,8 @@ Respond with only the priority level with no other text.
 
 AGENTS = ["http://localhost:8001/"]
 
+tasks = {}
+
 
 async def prioritize_message(message: Message):
     llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo")
@@ -62,12 +64,19 @@ async def prioritize_message(message: Message):
 async def get_task_ids(agent: str, session) -> list[int]:
     url = urljoin(agent, "ap/v1/agent/tasks")
     task_ids = []
+    if agent not in tasks:
+        create_url = urljoin(agent, "ap/v1/agent/tasks")
+        async with session.post(create_url, json={"input": "Chat"}) as response:
+            data = await response.json()
+            tasks[agent] = [data.get("task_id")]
 
-    async with session.get(url) as response:
-        print(f"Status: {response.status}\n{response.content}")
-        data = await response.json()
-        for task in data:
-            task_ids.append(task.get("task_id"))
+    print(tasks.get(agent))
+    return tasks.get(agent)
+    #    async with session.get(url) as response:
+    #        print(f"Status: {response.status}\n{response.content}")
+    #        data = await response.json()
+    #        for task in data:
+    #            task_ids.append(task.get("task_id"))
 
     return task_ids
 

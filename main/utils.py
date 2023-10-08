@@ -1,7 +1,9 @@
 import os
-from dotenv import load_dotenv
+
 import openai
 import tiktoken
+from dotenv import load_dotenv
+
 from supabase_db import supabase
 
 load_dotenv()
@@ -127,7 +129,7 @@ def discard_topic(topic):
         .data[0]["stimuli"]
     )
     for stimulus in stimuli:
-        supabase.table("inbox").insert(stimulus).execute().data
+        supabase.table("inbox").insert({"stimulus": stimulus}).execute()
     response = None
     try:
         response = (

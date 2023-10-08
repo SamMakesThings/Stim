@@ -1,12 +1,13 @@
 import os
-from dotenv import load_dotenv
 
+from agent_protocol import Agent
+from dotenv import load_dotenv
+from langchain.agents import ZeroShotAgent, AgentExecutor
 # Import all the langchain bullshit
 from langchain.agents import load_tools
-from langchain.agents import ZeroShotAgent, AgentExecutor
-from langchain.tools import Tool
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
+from langchain.tools import Tool
 
 from utils import (
     read_chat_history,
@@ -127,3 +128,14 @@ def run_main_agent():
     agent_executor.run(input_dict)
 
     return None
+
+
+def main():
+    from app import task_handler, step_handler
+
+    Agent.setup_agent(task_handler, step_handler).start(port=8001)
+
+
+if __name__ == "__main__":
+    load_dotenv()
+    main()
