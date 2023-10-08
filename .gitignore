@@ -143,4 +143,6 @@ dmypy.json
 .github/templates/*
 !/benchmarker/agent/beebot/
 
+# custom
 docker-compose.yml
+.flake8

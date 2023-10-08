@@ -1,30 +1,140 @@
-import openai
 import os
+from dotenv import load_dotenv
+import logging
 
-class Relevance:
+import openai
 
-    def __init__(self, db_wrapper):
-        self.openai_api_key = os.environ.get('OPENAI_API_KEY')
+from supabase_db import supabase
+
+load_dotenv()
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+class RelevanceAgent:
+    def __init__(self):
+        self.openai_api_key = os.environ.get("OPENAI_API_KEY")
         if not self.openai_api_key:
             raise ValueError("OpenAI API key not found in environment variables")
         openai.api_key = self.openai_api_key
-        self.db_wrapper = db_wrapper
-        self.concept_cache = set()
 
-    def processRelevance(self, message, message_id):
-        # Hypothetical OpenAI API call
-        response = openai.Completion.create(prompt=f"Extract concepts and priority from: {message}", max_tokens=50)
-        concept, relevance = response.choices[0].text.split(":")
+    def batch_stimulus_into_topic(self, stimulus):
+        topics = supabase.table("topic_batches").select("*").execute().data
+        topics_str = ", ".join([topic["topic"] for topic in topics])
+        logger.info(f"Existing Topics: {topics_str}")
+        response = None
+        try:
+            response = (
+                openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo-16k",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": f"""
+                        You are a topic identification system. You receive messages that need to be categorized into topics.
+                        If no existing topic clearly represents the message content, create a new topic.
+                        Respond with only the string of the topic, no quotes, no fluff, nothing other than the topic itself.
 
-        self.store_in_db(concept.strip(), message_id, relevance.strip())
+                        Existing Topics: {topics_str}
 
-    def store_in_db(self, concept, message_id, relevance):
-        if concept not in self.concept_cache:
-            self.db_wrapper.set(concept, message_id, relevance)
-            self.concept_cache.add(concept)
+
+                        EXAMPLES:
+                            Existing Topics: board meeting prep, chiefs game on saturday, dinner with mom, coffee with alex at 4
+                            USER: Alex: Who is joining for coffee at 4?
+                            ASSISTANT: coffee with alex at 4
+
+                            Existing Topics: brunch with grandma, updates to frontend, new hire onboarding
+                            USER: Sara: I'm going to be out of the office for the next two weeks
+                            ASSISTANT: Sara out of office
+                        """,  # noqa: E501
+                        },
+                        {
+                            "role": "user",
+                            "content": f"{stimulus['sender']}: {stimulus['content']}",
+                        },
+                    ],
+                )
+                .choices[0]
+                .message
+            )
+        except Exception as e:
+            logger.error(f"Error with OpenAI API: {e}")
+
+        # Update topic batches in db
+        self.upsert_topic_batches(stimulus, topics, response["content"])
+
+    def upsert_topic_batches(self, stimulus, topics, topic):
+        existing = []
+        old_relevance = None
+        for entry in topics:
+            if entry["topic"] == topic:
+                existing = entry["stimuli"]
+                old_relevance = entry["relevance"]
+                break
+        stimuli = existing + [stimulus]
+        new_relevance = self.calculate_relevance(topic, stimuli, old_relevance)
+        batch = {"topic": topic, "stimuli": stimuli, "relevance": new_relevance}
+        try:
+            response = supabase.table("topic_batches").upsert(batch).execute().data
+        except Exception as e:
+            logger.error(f"Error upserting topic batch: {e}")
+        return response
+
+    def calculate_relevance(self, topic, stimuli, old_relevance):
+        stimuli_str = 
+        response = None
+        try:
+            response = (
+                openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo-16k",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": f"""
+                        You are a topic identification system. You receive messages that need to be categorized into topics.
+                        If no existing topic clearly represents the message content, create a new topic.
+                        Respond with only the string of the topic, no quotes, no fluff, nothing other than the topic itself.
+
+                        Topic: {topic}
+                        Old Relevance: {old_relevance if old_relevance else "UNNASSIGNED"}
+                        Stimuli: {stimuli_str}
+
+
+                        EXAMPLES:
+                            Existing Topics: board meeting prep, chiefs game on saturday, dinner with mom, coffee with alex at 4
+                            USER: Alex: Who is joining for coffee at 4?
+                            ASSISTANT: coffee with alex at 4
+
+                            Existing Topics: brunch with grandma, updates to frontend, new hire onboarding
+                            USER: Sara: I'm going to be out of the office for the next two weeks
+                            ASSISTANT: Sara out of office
+                        """,  # noqa: E501
+                        },
+                        {
+                            "role": "user",
+                            "content": f"{stimulus['sender']}: {stimulus['content']}",
+                        },
+                    ],
+                )
+                .choices[0]
+                .message
+            )
+        except Exception as e:
+            logger.error(f"Error with OpenAI API: {e}")
+
+        logger.info(response)
+        # Return the relevance score for the topic batch
+        return response
+
 
 # Example Usage
-db_wrapper = PostgresWrapper(db_connection_string="YOUR_DB_CONNECTION_STRING")
-relevance = Relevance(db_wrapper)
-relevance.processRelevance("Your message here", "message_id_123")
-db_wrapper.close()
+relevance = RelevanceAgent()
+relevance.batch_stimulus_into_topic(
+    {
+        "priority": "Low",
+        "author": "Alex",
+        "content": "I want to sail across the atlantic",
+        "channel": "general",
+    }
+)

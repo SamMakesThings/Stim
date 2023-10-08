@@ -1,30 +1,80 @@
+import logging
 from enum import Enum
 from fastapi import FastAPI
 from agent_protocol import Agent, Step, Task
 
 from supabase_db import supabase
+from relevance_agent import RelevanceAgent
 
+# from main_agent import run_main_agent
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 app = FastAPI()
 
 
 class StepTypes(str, Enum):
-    PROCESS = "process"  # Process Stimulus
-    SEND = "send"  # Send Message
+    PROCESS = "process"  # Eval + Batch
+    QUERY = "query"  # If the user has asked for information of any level
+    REPORT = "report"  # When the main agent reports topic stimuli in the conversation
+    UNSUPPORTED = "unsupported"  # Default response for bad requests
 
 
-# Does this make sense? Think so...
+class PriorityLevel(Enum):
+    LOW = 0
+    MEDIUM = 1
+    HIGH = 2
+    CRITICAL = 3
 
 
 async def _process_stimuli(step: Step) -> Step:
     # Process the stimulus
-    # NOTE: Chiung-Yi add code here
-    pass
+    logger.info(step.input)
+    step.input["priority"] = step.input["priority"].lower()
+    if step.input["priority"]:
+        step.input["priority"] = 1
+
+    step.output = "Processed stimulus"  # TODO: Replace with actual output
+    step.status = "done"
+    return step
 
 
-async def _message_user(step: Step) -> Step:
-    # Send the message to the user
-    pass
+# Should we put this as a tool for the main agent?
+async def _service_query(step: Step) -> Step:
+    # fetch topic batches based on user query
+    # add response to chat_history
+
+    # The input to this step would be the user input
+    # This then forwards the input over to the agent
+    # The output
+
+    step.output = "Serviced query"  # TODO: Replace with actual output
+    step.status = "done"
+    return step
+
+
+async def _manage_convo_context(step: Step) -> Step:
+    """Queries the topic batches, passes them to main agent.
+    Main Agent then parses topics by relevance and decides whether
+    to inject context into conversation, use a tool, etc"""
+
+    # Fetch latest topics
+    batches = (
+        supabase.table("topic_batches").select("*").order_by("relevance").execute().data
+    )
+
+    # Pass to main agent
+    run_main_agent(batches=batches)
+
+    # TODO: Update step status to done
+
+    return step
+
+
+async def _handle_unsupported_step(step: Step) -> Step:
+    step.name = StepTypes.UNSUPPORTED.name
+    return step
 
 
 async def task_handler(task: Task) -> None:
@@ -37,10 +87,13 @@ async def step_handler(step: Step):
     task = await Agent.db.get_task(step.task_id)
     if step.name == StepTypes.PROCESS:
         return await _process_stimuli(step)
-    elif step.name == StepTypes.SEND:
-        return await _message_user(task, step)
+    elif step.name == StepTypes.QUERY:
+        return await _service_query(step)
+    elif step.name == StepTypes.REPORT:
+        return await _manage_convo_context(task, step)
     else:
-        return await _process_stimuli(task, step)
+        logger.error(f"Unknown step type: {step.name}")
+        return await _handle_unsupported_step(step)
 
 
 # Insert Agent Protocol stuff here

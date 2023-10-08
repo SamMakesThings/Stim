@@ -13,3 +13,5 @@ uvicorn~=0.23.2
 agent-protocol~=1.0.1
 python-dotenv
 supabase
+openai
+langchain
