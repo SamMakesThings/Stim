@@ -11,6 +11,8 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    volumes:
+      - ./stim:/app
 
   main-agent:
     build:
@@ -20,6 +22,8 @@ services:
       DATABASE_URL: "postgresql://postgres:password@db:5432/stim"
     ports:
       - "8001:8001"
+    volumes:
+      - ./main:/app
     depends_on:
       - db
 
@@ -32,6 +36,8 @@ services:
     depends_on:
       - stim
       - main-agent
+    volumes:
+      - ./ui:/app
 
   db:
     image: postgres

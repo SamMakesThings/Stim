@@ -1,11 +1,20 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
+from starlette.responses import PlainTextResponse
 
 app = FastAPI()
 
+class Challenge(BaseModel):
+    token: str
+    challenge: str
+    type: str
 
-@app.post("/slack_message")
-def slack_webhook():
+@app.post("/slack_events")
+def slack_events(challenge: Challenge):
     """Incoming messages from slack"""
+    if challenge.challenge:
+        return PlainTextResponse(content=challenge.challenge)
+
     return {"ok": True}
 
 
