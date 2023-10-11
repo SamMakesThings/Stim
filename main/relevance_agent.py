@@ -15,6 +15,12 @@ logger.setLevel(logging.INFO)
 
 
 class RelevanceAgent:
+    """
+    This class is responsible for determining the relevance of a given stimulus.
+    It uses the OpenAI API to categorize the stimulus into a topic.
+    If no existing topic clearly represents the stimulus, it creates a new topic.
+    """
+
     def __init__(self):
         self.openai_api_key = os.environ.get("OPENAI_API_KEY")
         if not self.openai_api_key:
@@ -107,14 +113,14 @@ class RelevanceAgent:
                         - Low
                         - Moderate
                         - High
-                        - Emergency
+                        - Crucial
 
                         Follow these steps to determine the new Relevance score:
                         1. Identify the 3 most salient concepts in the chat history.
                         2. Evaluate how similar the Topic is to each of the 3 concepts.
                         3a. If the Old Relevance score is UNNASSIGNED, choose a Relevance score based on the Topic similarity to chat history.
                         3b. Otherwise, choose a Relevance score based on the Topic similarity to chat history and the Priority level.
-                        4. If the Priority level is critical, always choose Emergency.
+                        4. If the Priority level is critical, always choose Crucial.
 
                         Respond with only the string of the new Relevance score, no quotes, no fluff, nothing other than the Relevance itself.
 

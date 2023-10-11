@@ -6,7 +6,7 @@ import discord
 from discord import Message
 from dotenv import load_dotenv
 
-from processing import process_message
+from processing import forward_message
 
 load_dotenv()
 
@@ -18,7 +18,7 @@ class StimClient(discord.Client):
     async def on_message(self, message: Message):
         print(f"Message from {message.author}: {message.content}")
         try:
-            await process_message(message)
+            await forward_message(message)
         except (SystemExit, KeyboardInterrupt) as e:
             raise e
         except BaseException as e:

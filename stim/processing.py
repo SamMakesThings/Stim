@@ -13,10 +13,10 @@ You are a message prioritization expert. You excel at analyzing the content of m
 # Levels
 
 There are the following levels of priority. Each message bust be given a priority most closely associated with one of the following:
-critical - requires immediate attention and interruption
-high - requires attention in the near future
-medium - requires attention, but is not urgent
-low - does not require any attention
+Critical - requires immediate attention and interruption
+High - requires attention in the near future
+Medium - requires attention, but is not urgent
+Low - does not require any attention
 
 # Context
 
@@ -45,9 +45,7 @@ Respond with only the priority level with no other text.
 {message}
 """  # noqa: E501
 
-AGENTS = ["http://localhost:8001/"]
-
-tasks = {}
+ENDPOINT = "http://localhost:8001/"
 
 
 async def prioritize_message(message: Message):
@@ -61,44 +59,21 @@ async def prioritize_message(message: Message):
     return priority
 
 
-async def get_task_ids(agent: str, session) -> list[int]:
-    url = urljoin(agent, "ap/v1/agent/tasks")
-    task_ids = []
-    if agent not in tasks:
-        create_url = urljoin(agent, "ap/v1/agent/tasks")
-        async with session.post(create_url, json={"input": "Chat"}) as response:
-            data = await response.json()
-            tasks[agent] = [data.get("task_id")]
-
-    print(tasks.get(agent))
-    return tasks.get(agent)
-    #    async with session.get(url) as response:
-    #        print(f"Status: {response.status}\n{response.content}")
-    #        data = await response.json()
-    #        for task in data:
-    #            task_ids.append(task.get("task_id"))
-
-    return task_ids
-
-
-async def process_message(message: Message):
+async def forward_message(message: Message):
     priority = await prioritize_message(message)
     message_data = {
         "priority": priority,
         "content": message.content,
         "author": message.author.name,
-        "channel": message.channel.name,
+        "source": "discord:" + message.channel.name,
     }
 
     async with aiohttp.ClientSession() as session:
-        for agent in AGENTS:
-            task_ids = await get_task_ids(agent, session)
-            for task_id in task_ids:
-                url = urljoin(agent, f"ap/v1/agent/tasks/{task_id}/steps")
-                print(f"Sending input {json.dumps(message_data)} to {url}")
+        url = urljoin(ENDPOINT, "process_stimulus")
 
-                async with session.post(
-                    url,
-                    json={"input": json.dumps(message_data), "name": "process"},
-                ) as response:
-                    print(f"Status: {response.status}\n{response.content}")
+        print(f"Sending input {json.dumps(message_data)} to {url}")
+        async with session.post(
+            url,
+            json={"input": json.dumps(message_data), "name": "process"},
+        ) as response:
+            print(f"Status: {response.status}\n{response.content}")

@@ -5,8 +5,8 @@ const DATABASE_PASS = process.env.DATABASE_KEY;
 
 // Create a single supabase client for interacting with your database
 const supabase = createClient(DATABASE_URL, DATABASE_PASS);
+const ENDPOINT = "http://localhost:8001/";
 
-const task_id = "394bb2c4-f85b-49da-a1f8-d0f715991faf"
 // Should trigger Report Step
 supabase
   .channel("any")
@@ -14,12 +14,9 @@ supabase
     "postgres_changes",
     { event: "*", schema: "public", table: "topic_batches" },
     (payload) => {
-<<<<<<< Updated upstream
-      got.post(`http://localhost:8001/ap/v1/agent/tasks/${task_id}/steps`);
-=======
-      task_id = got.get("http://localhost:8001/ap/v1/tasks")[0];
-      got.post("http://localhost:8001/ap/v1/tasks/{task_id}/steps");
->>>>>>> Stashed changes
+      got.post(ENDPOINT+`inject_context`, {
+        json: payload
+      });
     }
   )
   .subscribe();
@@ -31,7 +28,9 @@ supabase
     "postgres_changes",
     { event: "*", schema: "public", table: "chat_history" },
     (payload) => {
-      got.post(`http://localhost:8001/ap/v1/agent/tasks/${task_id}/steps`);
+      got.post(ENDPOINT+`process_stimulus`, {
+        json: payload
+      });
     }
   )
   .subscribe();
