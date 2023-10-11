@@ -14,7 +14,12 @@ supabase
     "postgres_changes",
     { event: "*", schema: "public", table: "topic_batches" },
     (payload) => {
+<<<<<<< Updated upstream
       got.post(`http://localhost:8001/ap/v1/agent/tasks/${task_id}/steps`);
+=======
+      task_id = got.get("http://localhost:8001/ap/v1/tasks")[0];
+      got.post("http://localhost:8001/ap/v1/tasks/{task_id}/steps");
+>>>>>>> Stashed changes
     }
   )
   .subscribe();

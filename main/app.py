@@ -89,6 +89,7 @@ async def _manage_convo_context(step: Step) -> Step:
     return step
 
 
+# NOTE: ALL ABOUT AGENT PROTOCOL --  YEET!!
 async def _handle_unsupported_step(step: Step) -> Step:
     step.name = StepTypes.UNSUPPORTED.name
     return step

@@ -82,7 +82,7 @@ def add_topic_to_chat_history(topic):
                     You receive a Topic and a list of associated notification json objects that need to be summarized for a user.
                     Respond with a message for the user that includes the summary of all notifications associated with the topic.
 
-                    Chat History: 
+                    Chat History:
                     {chat_history_str}
                     """,  # noqa: E501
                     },
@@ -98,7 +98,7 @@ def add_topic_to_chat_history(topic):
     except Exception as e:
         print(f"Error with OpenAI API: {e}")
 
-    # Update topic batches in db
+    # Update chat history in db
     try:
         supabase.table("chat_history").insert(
             {"sender": "system", "content": response}
