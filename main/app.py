@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from enum import Enum
 from dotenv import load_dotenv
@@ -15,6 +16,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 app = FastAPI()
+
+
+class Data(BaseModel):
+    content: Any
 
 
 # Should be comparable by priority
@@ -59,11 +64,12 @@ async def process_stimulus(stimulus: Stimulus):
 
 
 @app.post("/inject_context")
-async def manage_convo_context():
+async def manage_convo_context(data: Data):
     """Queries the topic batches, passes them to main agent.
     Main Agent then parses topics by relevance and decides whether
     to inject context into conversation, use a tool, etc"""
-
+    if data.content:
+        print(f"Received context: {data.content}")
     # Run main agent
     try:
         run_main_agent()
