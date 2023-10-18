@@ -95,6 +95,7 @@ class RelevanceAgent:
 
     def calculate_relevance(self, topic, stimuli, old_relevance):
         messages_str = read_chat_history()
+        print(stimuli)
         priorities = [stimulus.priority for stimulus in stimuli]
         topic_priority = mode(priorities)
         if "critical" in priorities:

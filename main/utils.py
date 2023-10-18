@@ -65,43 +65,52 @@ def flag_query_topics(query):
 
 def add_topic_to_chat_history(topic):
     chat_history_str = read_chat_history()
-    topic_obj = (
-        supabase.table("topic_batches").select("*").eq("topic", topic).execute().data[0]
+    topic_data = (
+        supabase.table("topic_batches").select("*").eq("topic", topic).execute().data
     )
-    stimuli = topic_obj["stimuli"]
+    topic_obj = topic_data[0] if topic_data else None
     response = None
-    try:
-        response = (
-            openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-16k",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": f"""
-                    You are a notification contextualization system. You know the recent chat history with your user.
-                    You receive a Topic and a list of associated notification json objects that need to be summarized for a user.
-                    Respond with a message for the user that includes the summary of all notifications associated with the topic.
+    if topic_obj:
+        stimuli = topic_obj["stimuli"]
+        try:
+            response = (
+                openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo-16k",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": f"""
+                        You are a notification contextualization system. You know the recent chat history with your user.
+                        You receive a Topic and a list of associated notification json objects that need to be summarized for a user.
+                        Respond with a message for the user that includes the summary of all notifications associated with the topic.
 
-                    Chat History:
-                    {chat_history_str}
-                    """,  # noqa: E501
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Topic: {topic}\nNotifications: {stimuli}",
-                    },
-                ],
+                        Chat History:
+                        {chat_history_str}
+                        """,  # noqa: E501
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Topic: {topic}\nNotifications: {stimuli}",
+                        },
+                    ],
+                )
+                .choices[0]
+                .message
             )
-            .choices[0]
-            .message
-        )
-    except Exception as e:
-        print(f"Error with OpenAI API: {e}")
+        except Exception as e:
+            print(f"Error with OpenAI API: {e}")
 
     # Update chat history in db
     try:
         supabase.table("chat_history").insert(
-            {"sender": "system", "content": response.content}
+            {
+                "sender": "system",
+                "content": (
+                    response.content
+                    if response
+                    else "You have no notifications on that topic."
+                ),
+            }
         ).execute().data
     except Exception as e:
         print(f"Error inserting chat history: {e}")

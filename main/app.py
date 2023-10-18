@@ -76,6 +76,6 @@ async def manage_convo_context(data: Data):
     try:
         run_main_agent()
     except Exception as e:
-        logger.error(f"Error running main agent: {e}")
+        logger.exception(f"Error running main agent: {e}")
 
     return {"ok": True}
