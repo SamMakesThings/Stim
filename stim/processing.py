@@ -45,7 +45,7 @@ Respond with only the priority level with no other text.
 {message}
 """  # noqa: E501
 
-ENDPOINT = "http://localhost:8001/"
+ENDPOINT = "http://main-agent:8001/"
 
 
 async def prioritize_message(message: Message):
