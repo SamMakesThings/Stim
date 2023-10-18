@@ -5,7 +5,7 @@ const DATABASE_PASS = process.env.DATABASE_KEY;
 
 // Create a single supabase client for interacting with your database
 const supabase = createClient(DATABASE_URL, DATABASE_PASS);
-const ENDPOINT = "http://localhost:8001/";
+const ENDPOINT = "http://main-agent:8001/";
 
 // Should trigger Report Step
 supabase
