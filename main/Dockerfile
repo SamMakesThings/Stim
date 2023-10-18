@@ -11,8 +11,8 @@ RUN pip install --upgrade pip && \
 EXPOSE 8001
 
 # Define environment variable for FastAPI to run on 0.0.0.0
-ENV HOST=0.0.0.0
-ENV FILTER_LEVEL="high"
+# ENV HOST=0.0.0.0
+# ENV FILTER_LEVEL="high"
 
 # Run app.py when the container launches
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
