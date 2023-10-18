@@ -61,7 +61,8 @@ async def prioritize_message(message: Message):
 
 async def forward_message(message: Message):
     priority = await prioritize_message(message)
-    message_data = {
+    print(f"\n\nPriority: {priority}\n\n")
+    stimulus = {
         "priority": priority,
         "content": message.content,
         "author": message.author.name,
@@ -71,9 +72,9 @@ async def forward_message(message: Message):
     async with aiohttp.ClientSession() as session:
         url = urljoin(ENDPOINT, "process_stimulus")
 
-        print(f"Sending input {json.dumps(message_data)} to {url}")
+        print(f"Sending input {json.dumps(stimulus)} to {url}")
         async with session.post(
             url,
-            json={"input": json.dumps(message_data), "name": "process"},
+            json=stimulus,
         ) as response:
             print(f"Status: {response.status}\n{response.content}")

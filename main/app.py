@@ -42,11 +42,13 @@ relevance_agent = RelevanceAgent()
 
 @app.post("/process_stimulus")
 async def process_stimulus(stimulus: Stimulus):
+    print("\n\nINCOMING: ", stimulus.priority.upper())
+
     # Process the stimulus
-    if stimulus.priority < Priority.MEDIUM:
+    if Priority[stimulus.priority.upper()].value < Priority.MEDIUM.value:
         logger.info("Archiving low priority stimulus")
         try:
-            supabase.table("inbox").insert({"stimulus": stimulus}).execute().data
+            supabase.table("inbox").insert({"stimulus": stimulus.dict()}).execute().data
         except Exception as e:
             logger.error(f"Error inserting stimulus: {e}")
     else:

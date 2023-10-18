@@ -59,7 +59,7 @@ class RelevanceAgent:
                         },
                         {
                             "role": "user",
-                            "content": f"{stimulus['author']}: {stimulus['content']}",
+                            "content": f"{stimulus.author}: {stimulus.content}",
                         },
                     ],
                 )
@@ -82,7 +82,11 @@ class RelevanceAgent:
                 break
         stimuli = existing + [stimulus]
         new_relevance = self.calculate_relevance(topic, stimuli, old_relevance)
-        batch = {"topic": topic, "stimuli": stimuli, "relevance": new_relevance}
+        batch = {
+            "topic": topic,
+            "stimuli": [s.dict() for s in stimuli],
+            "relevance": new_relevance,
+        }
         try:
             response = supabase.table("topic_batches").upsert(batch).execute().data
             return response
@@ -91,7 +95,7 @@ class RelevanceAgent:
 
     def calculate_relevance(self, topic, stimuli, old_relevance):
         messages_str = read_chat_history()
-        priorities = [stimulus["priority"] for stimulus in stimuli]
+        priorities = [stimulus.priority for stimulus in stimuli]
         topic_priority = mode(priorities)
         if "critical" in priorities:
             topic_priority = "critical"

@@ -101,7 +101,7 @@ def add_topic_to_chat_history(topic):
     # Update chat history in db
     try:
         supabase.table("chat_history").insert(
-            {"sender": "system", "content": response}
+            {"sender": "system", "content": response.content}
         ).execute().data
     except Exception as e:
         print(f"Error inserting chat history: {e}")

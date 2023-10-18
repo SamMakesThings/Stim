@@ -14,7 +14,11 @@ supabase
     "postgres_changes",
     { event: "*", schema: "public", table: "topic_batches" },
     (payload) => {
-      got.post(ENDPOINT+`inject_context`, {
+      console.log(payload);
+      got.post(ENDPOINT + `inject_context`, {
+        json: {
+          content: payload,
+        },
       });
     }
   )
@@ -27,7 +31,6 @@ supabase
     "postgres_changes",
     { event: "*", schema: "public", table: "chat_history" },
     (payload) => {
-      console.log(payload);
       got.post(ENDPOINT + `inject_context`, {
         json: {
           content: payload.new.content,
